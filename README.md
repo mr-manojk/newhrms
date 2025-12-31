@@ -38,7 +38,8 @@ server/
     DB_HOST=localhost
     DB_USER=root
     DB_PASS=your_password
-    DB_NAME=myhr_db
+    DB_NAME=nexushr_db
+    API_KEY=your_gemini_api_key
     ```
 
 3.  **Install Dependencies**:
