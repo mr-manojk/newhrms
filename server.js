@@ -1,11 +1,11 @@
 require('dotenv').config();
 const app = require('./app');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 NexusHR Backend: Operational on port ${PORT}`);
-  console.log(`📡 API Base: http://localhost:${PORT}/api`);
+  console.log(`📡 API Base: https://node-mysql-api-lhbg.onrender.com/:${PORT}/api`);
 });
 
 // Graceful shutdown handling
