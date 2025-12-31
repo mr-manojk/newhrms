@@ -25,10 +25,10 @@ server/
 
 1.  **Database Setup**:
     - Ensure MySQL is running on your system.
-    - Create a database named `nexushr_db`.
+    - Create a database named `myhr_db`.
     - Run the provided `database.sql` script to create all tables and initial seed data:
       ```bash
-      mysql -u root -p nexushr_db < database.sql
+      mysql -u root -p myhr_db < database.sql
       ```
 
 2.  **Environment Setup**:
@@ -38,7 +38,7 @@ server/
     DB_HOST=localhost
     DB_USER=root
     DB_PASS=your_password
-    DB_NAME=nexushr_db
+    DB_NAME=myhr_db
     API_KEY=your_gemini_api_key
     ```
 
