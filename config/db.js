@@ -13,7 +13,8 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: parseInt(process.env.DB_PORT || '3306'),
   waitForConnections: true,
-  connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '5'),
+  connectionLimit: 3,
+  connectTimeout: 10000,
   idleTimeout: 30000, 
   queueLimit: 0,
   dateStrings: true,
@@ -29,14 +30,14 @@ pool.on('error', (err) => {
     console.error('Connection to database was closed.');
   }
   if (err.code === 'ER_CON_COUNT_ERROR') {
-    console.error('Database has tooDatabase has too many connections. Adjust DB_CONNECTION_LIMIT. many connections.');
+    console.error('Database has too many connections. Limit is strictly set to 3.');
   }
   if (err.code === 'ECONNREFUSED') {
     console.error('Database connection was refused.');
   }
 });
 
-console.log(`📦 Database: Connection pool established (Limit: ${process.env.DB_CONNECTION_LIMIT || '5'}).`);
+console.log(`📦 Database: Connection pool established (Limit: 3).`);
 if (process.env.DB_SSL === 'true') {
   console.log('🔒 SSL Encryption enabled for DB connection.');
 }

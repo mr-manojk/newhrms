@@ -10,7 +10,7 @@ async function bulkUpsert(table, data, columns) {
   const escapedCols = columns.map(c => `\`${c}\``);
   const placeholders = columns.map(() => '?').join(',');
   
-  // Create the update clause excluding keys and identifiers where appropriate
+  // Create the update clause
   const updateCols = columns.filter(col => col !== 'id' && col !== 'userId');
   const updateClause = updateCols.length > 0 
     ? updateCols.map(col => `\`${col}\` = VALUES(\`${col}\`)`).join(', ')
@@ -20,17 +20,16 @@ async function bulkUpsert(table, data, columns) {
                  VALUES (${placeholders}) 
                  ON DUPLICATE KEY UPDATE ${updateClause}`;
 
+  // Transactions require a dedicated connection, but we ensure prompt release
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
     for (const item of data) {
       const values = columns.map(col => {
         let val = item[col];
-        // Handle nested objects as JSON for MySQL
         if (val && typeof val === 'object' && !(val instanceof Date)) {
           return JSON.stringify(val);
         }
-        // Handle empty values
         if (val === undefined || val === '' || val === 'null' || val === null) {
           return null;
         }
@@ -43,11 +42,12 @@ async function bulkUpsert(table, data, columns) {
     await connection.rollback();
     throw err;
   } finally {
-    connection.release();
+    connection.release(); // Return the connection to the pool immediately
   }
 }
 
 const hrModel = {
+  // Uses shorthand pool.query for automatic connection acquisition/release
   findAll: async (table) => {
     const [rows] = await pool.query(`SELECT * FROM ${table}`);
     return rows;
@@ -55,13 +55,14 @@ const hrModel = {
   
   bulkUpsert,
 
+  // Uses shorthand pool.query
   findConfig: async () => {
     const [rows] = await pool.query('SELECT * FROM system_config LIMIT 1');
     return rows[0];
   },
 
+  // Uses shorthand pool.query
   saveConfig: async (configData) => {
-    // Basic single-row system_config handling
     const cols = Object.keys(configData);
     const values = Object.values(configData);
     const placeholders = cols.map(() => '?').join(',');
