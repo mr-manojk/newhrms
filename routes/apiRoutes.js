@@ -1,9 +1,15 @@
+
 const express = require('express');
 const router = express.Router();
 const hrController = require('../controllers/hrController');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+/**
+ * @typedef {import('express').Request} Request
+ * @typedef {import('express').Response} Response
+ */
 
 // Multer Storage Configuration
 const storage = multer.diskStorage({
@@ -50,6 +56,10 @@ router.get('/notifications', hrController.getNotifications);
 router.post('/notifications/bulk', hrController.bulkUpsertNotifications);
 
 // Upload Route
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
 router.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
   

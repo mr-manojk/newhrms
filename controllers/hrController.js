@@ -1,14 +1,37 @@
+
 const hrModel = require('../models/hrModel');
 
+/**
+ * @typedef {import('express').Request} Request
+ * @typedef {import('express').Response} Response
+ * @typedef {import('express').NextFunction} NextFunction
+ */
+
+/**
+ * Robust JSON parser for database columns.
+ * @param {any} value - The raw database value to parse
+ * @param {any} fallback - The fallback value if parsing fails
+ * @returns {any}
+ */
+const safeParse = (value, fallback) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'object') return value;
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    return fallback;
+  }
+};
+
 const hrController = {
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getUsers: async (req, res, next) => {
     try {
       const users = await hrModel.findAll('users');
-      const safeParse = (value, fallback) => {
-        if (value === null || value === undefined) return fallback;
-        if (typeof value === 'string') return JSON.parse(value);
-        return value; // already an object/array
-    };
       const parsed = users.map(u => ({
         ...u,
         emergencyContact: safeParse(u.emergencyContact, null),
@@ -22,9 +45,17 @@ const hrController = {
         languages: safeParse(u.languages, [])
       }));
       res.json(parsed);
-    } catch (err) { next(err); }
+    } catch (err) { 
+      console.error("Controller Error (getUsers):", err.message);
+      next(err); 
+    }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   bulkUpsertUsers: async (req, res, next) => {
     try {
       const { users } = req.body;
@@ -42,6 +73,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getAttendance: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('attendance');
@@ -49,6 +85,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   bulkUpsertAttendance: async (req, res, next) => {
     try {
       const { attendance } = req.body;
@@ -58,6 +99,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getLeaves: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('leaves');
@@ -65,6 +111,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   bulkUpsertLeaves: async (req, res, next) => {
     try {
       const { leaves } = req.body;
@@ -74,13 +125,26 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getLeaveBalances: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('leave_balances');
-      res.json(data);
-    } catch (err) { next(err); }
+      res.json(data || []);
+    } catch (err) { 
+      console.error("Controller Error (getLeaveBalances):", err.message);
+      next(err); 
+    }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   bulkUpsertBalances: async (req, res, next) => {
     try {
       const { balances } = req.body;
@@ -90,6 +154,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getHolidays: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('holidays');
@@ -97,6 +166,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   bulkUpsertHolidays: async (req, res, next) => {
     try {
       const { holidays } = req.body;
@@ -106,6 +180,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getConfig: async (req, res, next) => {
     try {
       const data = await hrModel.findConfig();
@@ -113,6 +192,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   saveConfig: async (req, res, next) => {
     try {
       await hrModel.saveConfig(req.body);
@@ -120,6 +204,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   getNotifications: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('notifications');
@@ -127,6 +216,11 @@ const hrController = {
     } catch (err) { next(err); }
   },
 
+  /**
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   bulkUpsertNotifications: async (req, res, next) => {
     try {
       const { notifications } = req.body;
