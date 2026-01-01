@@ -38,7 +38,3 @@ public/assets
 # Build output
 build/
 dist/
-
-# Uploads
-uploads/
-uploads/*
