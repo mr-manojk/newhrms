@@ -9,13 +9,11 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // --- PATH CONFIGURATION ---
-// Explicitly resolve the path to the frontend build directory
 const distPath = path.resolve(__dirname, '..', 'dist');
 const indexPath = path.join(distPath, 'index.html');
 
 console.log(`[System] MyHR Server Booting...`);
-console.log(`[System] Root Dir: ${path.resolve(__dirname, '..')}`);
-console.log(`[System] Dist Dir: ${distPath}`);
+console.log(`[System] Dist Path: ${distPath}`);
 
 // Request Logging
 app.use((req, res, next) => {
@@ -32,13 +30,15 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static Assets for Uploads
 const uploadsPath = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
 app.use('/uploads', express.static(uploadsPath));
 
 // 1. Mount API Routes
 app.use('/api', apiRoutes);
 
-// 2. Explicit 404 for API
+// 2. Explicit 404 for API calls (prevent them from falling through to SPA routing)
 app.use('/api', (req, res) => {
   res.status(404).json({ 
     success: false, 
@@ -46,28 +46,33 @@ app.use('/api', (req, res) => {
   });
 });
 
-// 3. Serve Frontend Build
+// 3. Serve Frontend Build static files
 if (fs.existsSync(distPath)) {
   console.log(`[System] ✅ Serving static files from: ${distPath}`);
   app.use(express.static(distPath));
 } else {
-  console.warn(`[System] ⚠️ Frontend build folder NOT found at ${distPath}. Static serving disabled.`);
+  console.warn(`[System] ⚠️ Frontend build folder NOT found at ${distPath}.`);
 }
 
 /**
- * Handle SPA routing
- * Using a regex string for the catch-all to prevent PathError in some path-to-regexp versions.
- * This ensures that any GET request not handled by previous routes serves index.html.
+ * 4. Handle SPA routing
+ * This must be the LAST route. It serves index.html for any request that 
+ * isn't an API call or a static file.
  */
-app.get(/^(?!\/api|\/uploads).*/, (req, res) => {
+app.get('*', (req, res) => {
+  // If the request is for an API or upload that reached here, it's truly a 404
+  if (req.url.startsWith('/api') || req.url.startsWith('/uploads')) {
+    return res.status(404).send('Not Found');
+  }
+
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
     res.status(404).send(`
       <div style="font-family: sans-serif; padding: 40px; text-align: center;">
-        <h1 style="color: #e11d48;">Build Missing</h1>
+        <h1 style="color: #e11d48;">Frontend Build Missing</h1>
         <p>The server is running, but the <code>dist</code> folder was not found.</p>
-        <p>Ensure your build command is <code>npm run deploy-build</code> and it completes successfully.</p>
+        <p>Ensure your build command in Render is <code>npm run deploy-build</code>.</p>
       </div>
     `);
   }
