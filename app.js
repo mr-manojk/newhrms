@@ -13,7 +13,7 @@ const app = express();
 const distPath = path.resolve(__dirname, '..', 'dist');
 const indexPath = path.join(distPath, 'index.html');
 
-console.log(`[System] Initializing NexusHR Server...`);
+console.log(`[System] Initializing MyHR Server...`);
 console.log(`[System] Checking for frontend build at: ${distPath}`);
 
 if (fs.existsSync(distPath)) {
@@ -76,7 +76,7 @@ app.get('*', (req, res, next) => {
       res.status(404).send(`
         <html>
           <body style="font-family: sans-serif; padding: 40px; text-align: center;">
-            <h1 style="color: #e11d48;">NexusHR Frontend Not Found</h1>
+            <h1 style="color: #e11d48;">MyHR Frontend Not Found</h1>
             <p>The server is running, but the frontend build is missing.</p>
             <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; display: inline-block; text-align: left; margin-top: 20px;">
               <strong>Troubleshooting for Render:</strong>
