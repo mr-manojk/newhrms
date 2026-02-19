@@ -4,8 +4,8 @@ const app = require('./app');
 const PORT = process.env.PORT
 
 const server = app.listen(PORT, () => {
-  console.log(`🚀 NexusHR Backend: Operational on port ${PORT}`);
-  console.log(`📡 API Base: https://node-mysql-api-lhbg.onrender.com/:${PORT}/api`);
+  console.log(`🚀 MyHR Backend: Operational on port ${PORT}`);
+  console.log(`📡 API Base:  https://node-mysql-api-lhbg.onrender.com/:${PORT}/api`); //Local server path for production use correct one.
 });
 
 // Graceful shutdown handling

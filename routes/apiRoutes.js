@@ -15,8 +15,9 @@ const fs = require('fs');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const { username, category } = req.body;
+    const targetCategory = category || '';
     const userDir = username ? username.toLowerCase().replace(/\s+/g, '_') : 'common';
-    const finalDir = path.join(__dirname, '../uploads', userDir, category || '');
+    const finalDir = path.join(__dirname, '../uploads', userDir, targetCategory);
     
     fs.mkdirSync(finalDir, { recursive: true });
     cb(null, finalDir);
@@ -36,16 +37,32 @@ router.get('/health', (req, res) => res.json({ status: 'OK', uptime: process.upt
 // User Routes
 router.get('/users', hrController.getUsers);
 router.post('/users/bulk', hrController.bulkUpsertUsers);
+router.post('/users/forgot-password', hrController.forgotPassword);
+router.post('/users/reset-password', hrController.resetPassword);
 
 // Attendance Routes
 router.get('/attendance', hrController.getAttendance);
 router.post('/attendance/bulk', hrController.bulkUpsertAttendance);
+
+// Roster Routes
+router.get('/rosters', hrController.getRosters);
+router.post('/rosters/bulk', hrController.bulkUpsertRosters);
 
 // Leave Routes
 router.get('/leaves', hrController.getLeaves);
 router.post('/leaves/bulk', hrController.bulkUpsertLeaves);
 router.get('/leave-balances', hrController.getLeaveBalances);
 router.post('/leave-balances/bulk', hrController.bulkUpsertBalances);
+
+// Payroll Routes
+router.get('/payroll/salary-structures', hrController.getSalaryStructures);
+router.post('/payroll/salary-structures/bulk', hrController.bulkUpsertSalaryStructures);
+router.get('/payroll/expenses', hrController.getExpenses);
+router.post('/payroll/expenses/bulk', hrController.bulkUpsertExpenses);
+router.get('/payroll/bonuses', hrController.getBonusIncrements);
+router.post('/payroll/bonuses/bulk', hrController.bulkUpsertBonusIncrements);
+router.get('/payroll/runs', hrController.getPayrollRuns);
+router.post('/payroll/runs/bulk', hrController.bulkUpsertPayrollRuns);
 
 // System Routes
 router.get('/holidays', hrController.getHolidays);
@@ -54,6 +71,14 @@ router.get('/config', hrController.getConfig);
 router.post('/config', hrController.saveConfig);
 router.get('/notifications', hrController.getNotifications);
 router.post('/notifications/bulk', hrController.bulkUpsertNotifications);
+
+// Performance Routes
+router.get('/performance/goals', hrController.getPerformanceGoals);
+router.post('/performance/goals/bulk', hrController.bulkUpsertPerformanceGoals);
+router.get('/performance/reviews', hrController.getPerformanceReviews);
+router.post('/performance/reviews/bulk', hrController.bulkUpsertPerformanceReviews);
+router.get('/performance/feedback', hrController.getPerformanceFeedback);
+router.post('/performance/feedback/bulk', hrController.bulkUpsertPerformanceFeedback);
 
 // Upload Route
 /**

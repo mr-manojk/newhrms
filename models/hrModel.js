@@ -1,4 +1,16 @@
+
 const pool = require('../config/db');
+
+/**
+ * Helper to convert ISO date strings to MySQL DATETIME format
+ */
+const formatForMySQL = (val) => {
+  if (typeof val === 'string' && val.includes('T') && (val.endsWith('Z') || val.includes('+'))) {
+    // Convert '2026-01-29T03:05:45.407Z' to '2026-01-29 03:05:45'
+    return val.replace('T', ' ').split('.')[0].replace('Z', '');
+  }
+  return val;
+};
 
 /**
  * Perform high-performance Bulk Upsert (Insert or Update on Duplicate Key)
@@ -27,13 +39,19 @@ async function bulkUpsert(table, data, columns) {
     for (const item of data) {
       const values = columns.map(col => {
         let val = item[col];
+        
+        // 1. Handle Objects/Arrays as JSON strings
         if (val && typeof val === 'object' && !(val instanceof Date)) {
           return JSON.stringify(val);
         }
+        
+        // 2. Handle Null/Empty values
         if (val === undefined || val === '' || val === 'null' || val === null) {
           return null;
         }
-        return val;
+
+        // 3. Handle ISO Datetime strings
+        return formatForMySQL(val);
       });
       await connection.query(query, values);
     }
@@ -47,18 +65,41 @@ async function bulkUpsert(table, data, columns) {
 }
 
 const hrModel = {
-  // Uses shorthand pool.query for automatic connection acquisition/release
+  /**
+   * Safe Find All: Returns records or an empty array if table doesn't exist yet.
+   */
   findAll: async (table) => {
-    const [rows] = await pool.query(`SELECT * FROM ${table}`);
-    return rows;
+    try {
+      const [rows] = await pool.query(`SELECT * FROM ${table}`);
+      return rows;
+    } catch (err) {
+      // If table is missing, return empty array to prevent app crash
+      if (err.code === 'ER_NO_SUCH_TABLE') {
+        console.warn(`⚠️ NexusHR Warning: Table '${table}' missing in database. Returning empty array.`);
+        return [];
+      }
+      throw err;
+    }
   },
   
   bulkUpsert,
 
+  // Specific method for password reset by email
+  updatePasswordByEmail: async (email, newPassword) => {
+    const query = 'UPDATE users SET password = ? WHERE email = ?';
+    const [result] = await pool.query(query, [newPassword, email]);
+    return result;
+  },
+
   // Uses shorthand pool.query
   findConfig: async () => {
-    const [rows] = await pool.query('SELECT * FROM system_config LIMIT 1');
-    return rows[0];
+    try {
+      const [rows] = await pool.query('SELECT * FROM system_config LIMIT 1');
+      return rows[0];
+    } catch (err) {
+      if (err.code === 'ER_NO_SUCH_TABLE') return null;
+      throw err;
+    }
   },
 
   // Uses shorthand pool.query
