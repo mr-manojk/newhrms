@@ -13,21 +13,11 @@ const app = express();
 const distPath = path.resolve(__dirname, '..', 'dist');
 const indexPath = path.join(distPath, 'index.html');
 
-console.log(`[System] Initializing MyHR Server...`);
-console.log(`[System] Checking for frontend build at: ${distPath}`);
+console.log(`[System] MyHR Server Booting...`);
+console.log(`[System] Root Dir: ${path.resolve(__dirname, '..')}`);
+console.log(`[System] Dist Dir: ${distPath}`);
 
-if (fs.existsSync(distPath)) {
-  console.log(`[System] ✅ Frontend build folder detected.`);
-  if (fs.existsSync(indexPath)) {
-    console.log(`[System] ✅ index.html detected.`);
-  } else {
-    console.error(`[System] ❌ dist folder exists but index.html is missing. Ensure 'npm run build' completed.`);
-  }
-} else {
-  console.warn(`[System] ⚠️ Frontend build folder NOT found. Static serving will be disabled.`);
-}
-
-// Request Logging Middleware
+// Request Logging
 app.use((req, res, next) => {
   if (!req.url.startsWith('/uploads')) {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -41,56 +31,46 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static Assets for Uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadsPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
+app.use('/uploads', express.static(uploadsPath));
 
 // 1. Mount API Routes
 app.use('/api', apiRoutes);
 
-// 2. Explicit 404 Handler for /api (Ensures no /api request falls through to SPA routing)
+// 2. Explicit 404 for API
 app.use('/api', (req, res) => {
   res.status(404).json({ 
     success: false, 
-    message: `API Endpoint not found: ${req.method} ${req.originalUrl}`,
-    hint: "Check if the route is defined in server/routes/apiRoutes.js"
+    message: `API endpoint not found: ${req.method} ${req.url}` 
   });
 });
 
-// --- PRODUCTION BUILD SERVING ---
-// Serve static files from the Vite build directory
-app.use(express.static(distPath));
+// 3. Serve Frontend Build
+if (fs.existsSync(distPath)) {
+  console.log(`[System] ✅ Serving static files from: ${distPath}`);
+  app.use(express.static(distPath));
+} else {
+  console.warn(`[System] ⚠️ Frontend build folder NOT found at ${distPath}. Static serving disabled.`);
+}
 
 /**
- * Handle Single Page Application (SPA) routing
- * This middleware catches any GET request that isn't for an API or an upload
- * and serves the index.html from the frontend build.
+ * Handle SPA routing
+ * Using a regex string for the catch-all to prevent PathError in some path-to-regexp versions.
+ * This ensures that any GET request not handled by previous routes serves index.html.
  */
-app.get('*', (req, res, next) => {
-  // Only intercept GET requests that aren't API calls
-  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-    return next();
+app.get(/^(?!\/api|\/uploads).*/, (req, res) => {
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send(`
+      <div style="font-family: sans-serif; padding: 40px; text-align: center;">
+        <h1 style="color: #e11d48;">Build Missing</h1>
+        <p>The server is running, but the <code>dist</code> folder was not found.</p>
+        <p>Ensure your build command is <code>npm run deploy-build</code> and it completes successfully.</p>
+      </div>
+    `);
   }
-
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      console.error(`[Server] Error sending index.html: ${err.message}`);
-      res.status(404).send(`
-        <html>
-          <body style="font-family: sans-serif; padding: 40px; text-align: center;">
-            <h1 style="color: #e11d48;">MyHR Frontend Not Found</h1>
-            <p>The server is running, but the frontend build is missing.</p>
-            <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; display: inline-block; text-align: left; margin-top: 20px;">
-              <strong>Troubleshooting for Render:</strong>
-              <ul>
-                <li>Ensure <strong>Build Command</strong> is set to <code>npm run deploy-build</code></li>
-                <li>Ensure <strong>Start Command</strong> is set to <code>npm start</code></li>
-                <li>Verify that the <code>dist</code> folder is being generated correctly during build.</li>
-              </ul>
-            </div>
-          </body>
-        </html>
-      `);
-    }
-  });
 });
 
 // Global Error Handler
