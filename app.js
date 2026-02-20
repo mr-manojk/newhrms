@@ -42,8 +42,7 @@ if (fs.existsSync(distPath)) {
  * 3. Handle SPA routing
  * This serves index.html for any request that doesn't match an API route or static file.
  */
-app.get('*', (req, res) => {
-  // Prevent API 404s from returning index.html
+app.use((req, res) => {
   if (req.url.startsWith('/api')) {
     return res.status(404).json({ success: false, message: 'API Endpoint not found' });
   }
