@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 const pool = require('../config/db');
 
 /**

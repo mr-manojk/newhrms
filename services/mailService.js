@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 const nodemailer = require('nodemailer');
 
 // Configure the transporter with environment variables

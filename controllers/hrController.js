@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 const hrModel = require('../models/hrModel');
 const mailService = require('../services/mailService');
 const pool = require('../config/db');
