@@ -6,7 +6,7 @@ const PORT = process.env.PORT
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 MyHR Backend: Operational on port ${PORT}`);
-  console.log(`📡 API Base:  https://node-mysql-api-lhbg.onrender.com/:${PORT}/api`); //Local server path for production use correct one.
+  console.log(`📡 API Base:  https://node-mysql-api-lhbg.onrender.com/api`); //Local server path for production use correct one.
 });
 
 // Graceful shutdown handling
