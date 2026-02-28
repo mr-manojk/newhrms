@@ -1,9 +1,9 @@
 // @ts-nocheck
-//const nodemailer = require('nodemailer');
-import { Resend } from 'resend';
+const nodemailer = require('nodemailer');
+//import { Resend } from 'resend';
 
 // Configure the transporter with environment variables
-/**const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT),
   secure: process.env.SMTP_SECURE === 'true',
@@ -14,16 +14,7 @@ import { Resend } from 'resend';
   connectionTimeout: 10000,  // 10s
   greetingTimeout: 10000,
   socketTimeout: 10000,
-}); **/
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-await resend.emails.send({
-  from: 'onboarding@resend.dev',
-  to: email,
-  subject: 'Password Reset Code',
-  html: `<p>Your reset code is <strong>${code}</strong></p>`,
-});
+}); 
 
 const mailService = {
   /**
