@@ -1,8 +1,9 @@
-// @ts-nocheck
+// @ts-nocheck			  
 require('dotenv').config();
 const app = require('./app');
 
 const PORT = process.env.PORT
+				  
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 MyHR Backend: Operational on port ${PORT}`);
