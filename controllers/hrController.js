@@ -178,7 +178,8 @@ const hrController = {
         'accumulatedtime': 'accumulatedTime',
         'breaktime': 'breakTime',
         'lastclockin': 'lastClockIn',
-        'latereason': 'lateReason'
+        'latereason': 'lateReason',
+        'loginnotes': 'loginNotes'
       };
       res.json(data.map(a => normalizeRow(a, mapping)));
     } catch (err) { next(err); }
@@ -187,7 +188,7 @@ const hrController = {
   bulkUpsertAttendance: async (req, res, next) => {
     try {
       const { attendance } = req.body;
-      const columns = ['id', 'userId', 'date', 'checkIn', 'checkOut', 'accumulatedTime', 'breakTime', 'location', 'latitude', 'longitude', 'lastClockIn', 'lateReason'];
+      const columns = ['id', 'userId', 'date', 'checkIn', 'checkOut', 'accumulatedTime', 'breakTime', 'location', 'latitude', 'longitude', 'lastClockIn', 'lateReason', 'loginNotes'];
       await hrModel.bulkUpsert('attendance', attendance, columns);
       res.json({ success: true });
     } catch (err) { next(err); }
