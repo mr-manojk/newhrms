@@ -506,14 +506,19 @@ const hrController = {
   getSurveys: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('surveys');
-      res.json(data.map(s => normalizeRow(s, {})));
+      res.json(data.map(s => {
+        const normalized = normalizeRow(s, {});
+        normalized.options = safeParse(normalized.options, []);
+        normalized.questions = safeParse(normalized.questions, []);
+        return normalized;
+      }));
     } catch (err) { next(err); }
   },
 
   bulkUpsertSurveys: async (req, res, next) => {
     try {
       const { surveys } = req.body;
-      const columns = ['id', 'title', 'description', 'type', 'status', 'startDate', 'endDate', 'createdBy', 'createdAt', 'options'];
+      const columns = ['id', 'title', 'description', 'type', 'status', 'startDate', 'endDate', 'createdBy', 'createdAt', 'options', 'questions'];
       await hrModel.bulkUpsert('surveys', surveys, columns);
       res.json({ success: true });
     } catch (err) { next(err); }
@@ -523,14 +528,18 @@ const hrController = {
     try {
       const data = await hrModel.findAll('survey_responses');
       const mapping = { 'surveyid': 'surveyId', 'userid': 'userId', 'username': 'userName', 'submittedat': 'submittedAt' };
-      res.json(data.map(r => normalizeRow(r, mapping)));
+      res.json(data.map(r => {
+        const normalized = normalizeRow(r, mapping);
+        normalized.answers = safeParse(normalized.answers, {});
+        return normalized;
+      }));
     } catch (err) { next(err); }
   },
 
   bulkUpsertSurveyResponses: async (req, res, next) => {
     try {
       const { responses } = req.body;
-      const columns = ['id', 'surveyId', 'userId', 'userName', 'response', 'submittedAt'];
+      const columns = ['id', 'surveyId', 'userId', 'userName', 'response', 'answers', 'submittedAt'];
       await hrModel.bulkUpsert('survey_responses', responses, columns);
       res.json({ success: true });
     } catch (err) { next(err); }
