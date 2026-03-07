@@ -506,12 +506,23 @@ const hrController = {
   getSurveys: async (req, res, next) => {
     try {
       const data = await hrModel.findAll('surveys');
-      res.json(data.map(s => {
-        const normalized = normalizeRow(s, {});
-        normalized.options = safeParse(normalized.options, []);
-        normalized.questions = safeParse(normalized.questions, []);
-        return normalized;
-      }));
+      res.json(data
+        .filter(s => s.frzInd !== 1 && s.frzInd !== true)
+        .map(s => {
+          const normalized = normalizeRow(s, {});
+          normalized.options = safeParse(normalized.options, []);
+          normalized.questions = safeParse(normalized.questions, []);
+          return normalized;
+        })
+      );
+    } catch (err) { next(err); }
+  },
+
+  deleteSurvey: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      await hrModel.softDelete('surveys', id);
+      res.json({ success: true });
     } catch (err) { next(err); }
   },
 

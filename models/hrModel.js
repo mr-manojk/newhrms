@@ -84,6 +84,12 @@ const hrModel = {
   
   bulkUpsert,
 
+  softDelete: async (table, id) => {
+    const query = `UPDATE ${table} SET frzInd = 1 WHERE id = ?`;
+    const [result] = await pool.query(query, [id]);
+    return result;
+  },
+
   // Specific method for password reset by email
   updatePasswordByEmail: async (email, newPassword) => {
     const query = 'UPDATE users SET password = ? WHERE email = ?';

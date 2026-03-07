@@ -83,6 +83,7 @@ router.post('/performance/feedback/bulk', hrController.bulkUpsertPerformanceFeed
 // Survey Routes
 router.get('/surveys', hrController.getSurveys);
 router.post('/surveys/bulk', hrController.bulkUpsertSurveys);
+router.delete('/surveys/:id', hrController.deleteSurvey);
 router.get('/surveys/responses', hrController.getSurveyResponses);
 router.post('/surveys/responses/bulk', hrController.bulkUpsertSurveyResponses);
 
