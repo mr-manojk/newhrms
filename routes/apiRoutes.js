@@ -80,6 +80,12 @@ router.post('/performance/reviews/bulk', hrController.bulkUpsertPerformanceRevie
 router.get('/performance/feedback', hrController.getPerformanceFeedback);
 router.post('/performance/feedback/bulk', hrController.bulkUpsertPerformanceFeedback);
 
+// Survey Routes
+router.get('/surveys', hrController.getSurveys);
+router.post('/surveys/bulk', hrController.bulkUpsertSurveys);
+router.get('/surveys/responses', hrController.getSurveyResponses);
+router.post('/surveys/responses/bulk', hrController.bulkUpsertSurveyResponses);
+
 // Upload Route
 /**
  * @param {Request} req

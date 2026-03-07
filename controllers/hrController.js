@@ -501,6 +501,39 @@ const hrController = {
       await hrModel.updatePasswordByEmail(email, newPassword);
       res.json({ success: true });
     } catch (err) { next(err); }
+  },
+
+  getSurveys: async (req, res, next) => {
+    try {
+      const data = await hrModel.findAll('surveys');
+      res.json(data.map(s => normalizeRow(s, {})));
+    } catch (err) { next(err); }
+  },
+
+  bulkUpsertSurveys: async (req, res, next) => {
+    try {
+      const { surveys } = req.body;
+      const columns = ['id', 'title', 'description', 'type', 'status', 'startDate', 'endDate', 'createdBy', 'createdAt', 'options'];
+      await hrModel.bulkUpsert('surveys', surveys, columns);
+      res.json({ success: true });
+    } catch (err) { next(err); }
+  },
+
+  getSurveyResponses: async (req, res, next) => {
+    try {
+      const data = await hrModel.findAll('survey_responses');
+      const mapping = { 'surveyid': 'surveyId', 'userid': 'userId', 'username': 'userName', 'submittedat': 'submittedAt' };
+      res.json(data.map(r => normalizeRow(r, mapping)));
+    } catch (err) { next(err); }
+  },
+
+  bulkUpsertSurveyResponses: async (req, res, next) => {
+    try {
+      const { responses } = req.body;
+      const columns = ['id', 'surveyId', 'userId', 'userName', 'response', 'submittedAt'];
+      await hrModel.bulkUpsert('survey_responses', responses, columns);
+      res.json({ success: true });
+    } catch (err) { next(err); }
   }
 };
 
